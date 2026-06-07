@@ -4,16 +4,21 @@ import (
 	"fmt"
 	"io"
 	"net"
+	"strconv"
 	"strings"
 )
 
 // Server holds our server state
 type Server struct {
-	port string
+	port  string
+	store *Store
 }
 
 func NewServer(port string) *Server {
-	return &Server{port: port}
+	return &Server{
+		port:  port,
+		store: NewStore(),
+	}
 }
 
 func (s *Server) Start() error {
@@ -69,6 +74,54 @@ func (s *Server) handleConnection(conn net.Conn) {
 		switch command {
 		case "PING":
 			conn.Write(Value{Type: "string", Str: "PONG"}.Marshal())
+		case "SET":
+			if len(val.Array) < 3 {
+				conn.Write(Value{Type: "error", Str: "ERR wrong number of arguments for 'set' command"}.Marshal())
+				continue
+			}
+			s.store.Set(val.Array[1].Str, val.Array[2].Str)
+			conn.Write(Value{Type: "string", Str: "OK"}.Marshal())
+		case "GET":
+			if len(val.Array) != 2 {
+				conn.Write(Value{Type: "error", Str: "ERR wrong number of arguments for 'get' command"}.Marshal())
+				continue
+			}
+			res, ok := s.store.Get(val.Array[1].Str)
+			if !ok {
+				conn.Write(Value{Type: "bulk", IsNull: true}.Marshal())
+			} else {
+				conn.Write(Value{Type: "bulk", Str: res}.Marshal())
+			}
+		case "DEL":
+			if len(val.Array) != 2 {
+				conn.Write(Value{Type: "error", Str: "ERR wrong number of arguments for 'del' command"}.Marshal())
+				continue
+			}
+			count := s.store.Del(val.Array[1].Str)
+			conn.Write(Value{Type: "integer", Num: count}.Marshal())
+		case "EXPIRE":
+			if len(val.Array) != 3 {
+				conn.Write(Value{Type: "error", Str: "ERR wrong number of arguments for 'expire' command"}.Marshal())
+				continue
+			}
+			ttl, err := strconv.Atoi(val.Array[2].Str)
+			if err != nil {
+				conn.Write(Value{Type: "error", Str: "ERR value is not an integer or out of range"}.Marshal())
+				continue
+			}
+			ok := s.store.Expire(val.Array[1].Str, ttl)
+			if ok {
+				conn.Write(Value{Type: "integer", Num: 1}.Marshal())
+			} else {
+				conn.Write(Value{Type: "integer", Num: 0}.Marshal())
+			}
+		case "TTL":
+			if len(val.Array) != 2 {
+				conn.Write(Value{Type: "error", Str: "ERR wrong number of arguments for 'ttl' command"}.Marshal())
+				continue
+			}
+			res := s.store.TTL(val.Array[1].Str)
+			conn.Write(Value{Type: "integer", Num: res}.Marshal())
 		default:
 			conn.Write(Value{Type: "error", Str: "ERR unknown command '" + command + "'"}.Marshal())
 		}

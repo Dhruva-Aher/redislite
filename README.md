@@ -15,6 +15,23 @@ This is a personal project to learn about TCP servers, concurrent programming wi
 - Background goroutine that evicts expired keys every 100ms (basically what Redis does under the hood)
 - Append-Only File (AOF) persistence: every write command is logged to `redislite.aof` and replayed on startup
 
+## Architecture Flow
+
+```text
+redis-cli
+    │
+    ▼
+TCP Server
+    │
+RESP Parser
+    │
+Command Handler
+    │
+Store (RWMutex)
+    │
+AOF Log
+```
+
 ## How to run
 
 1. Make sure you have Go installed.

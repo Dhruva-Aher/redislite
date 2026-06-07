@@ -6,7 +6,7 @@ This is a personal project to learn about TCP servers, concurrent programming wi
 
 ## What works so far
 
-Phase 2 is complete! 
+Phase 3 is complete! 
 - TCP server listens on port 6380
 - Parses basic RESP protocol using a custom parser (no libs!)
 - Responds to `PING` with `+PONG`
@@ -14,6 +14,7 @@ Phase 2 is complete!
 - Core in-memory data store using `sync.RWMutex`
 - Supported commands: `SET`, `GET`, `DEL`, `EXPIRE`, `TTL`
 - Background goroutine that evicts expired keys every 100ms (basically what Redis does under the hood)
+- Added support for Hashes (`HSET`, `HGET`) and Lists (`LPUSH`, `LRANGE`)
 
 ## Supported Commands
 
@@ -23,11 +24,11 @@ Phase 2 is complete!
 - `DEL`
 - `EXPIRE`
 - `TTL`
-(To be implemented)
 - `HSET`
 - `HGET`
 - `LPUSH`
 - `LRANGE`
+(To be implemented)
 - `PING`
 - `INFO`
 

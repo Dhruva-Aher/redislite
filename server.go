@@ -122,6 +122,52 @@ func (s *Server) handleConnection(conn net.Conn) {
 			}
 			res := s.store.TTL(val.Array[1].Str)
 			conn.Write(Value{Type: "integer", Num: res}.Marshal())
+		case "HSET":
+			if len(val.Array) < 4 {
+				conn.Write(Value{Type: "error", Str: "ERR wrong number of arguments for 'hset' command"}.Marshal())
+				continue
+			}
+			s.store.HSet(val.Array[1].Str, val.Array[2].Str, val.Array[3].Str)
+			conn.Write(Value{Type: "integer", Num: 1}.Marshal())
+		case "HGET":
+			if len(val.Array) != 3 {
+				conn.Write(Value{Type: "error", Str: "ERR wrong number of arguments for 'hget' command"}.Marshal())
+				continue
+			}
+			res, ok := s.store.HGet(val.Array[1].Str, val.Array[2].Str)
+			if !ok {
+				conn.Write(Value{Type: "bulk", IsNull: true}.Marshal())
+			} else {
+				conn.Write(Value{Type: "bulk", Str: res}.Marshal())
+			}
+		case "LPUSH":
+			if len(val.Array) < 3 {
+				conn.Write(Value{Type: "error", Str: "ERR wrong number of arguments for 'lpush' command"}.Marshal())
+				continue
+			}
+			var args []string
+			for i := 2; i < len(val.Array); i++ {
+				args = append(args, val.Array[i].Str)
+			}
+			count := s.store.LPush(val.Array[1].Str, args...)
+			conn.Write(Value{Type: "integer", Num: count}.Marshal())
+		case "LRANGE":
+			if len(val.Array) != 4 {
+				conn.Write(Value{Type: "error", Str: "ERR wrong number of arguments for 'lrange' command"}.Marshal())
+				continue
+			}
+			start, err1 := strconv.Atoi(val.Array[2].Str)
+			stop, err2 := strconv.Atoi(val.Array[3].Str)
+			if err1 != nil || err2 != nil {
+				conn.Write(Value{Type: "error", Str: "ERR value is not an integer or out of range"}.Marshal())
+				continue
+			}
+			res := s.store.LRange(val.Array[1].Str, start, stop)
+			arr := Value{Type: "array", Array: make([]Value, 0)}
+			for _, item := range res {
+				arr.Array = append(arr.Array, Value{Type: "bulk", Str: item})
+			}
+			conn.Write(arr.Marshal())
 		default:
 			conn.Write(Value{Type: "error", Str: "ERR unknown command '" + command + "'"}.Marshal())
 		}

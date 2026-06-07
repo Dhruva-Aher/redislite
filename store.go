@@ -7,7 +7,10 @@ import (
 
 // Item holds our value and an optional expiry time
 type Item struct {
-	Value      string
+	Type       string // "string", "hash", "list"
+	StrVal     string
+	HashVal    map[string]string
+	ListVal    []string
 	Expiration int64 // unix nano, 0 if no expiry
 }
 
@@ -31,7 +34,7 @@ func NewStore() *Store {
 func (s *Store) Set(key, value string) {
 	s.mu.Lock()
 	defer s.mu.Unlock()
-	s.data[key] = Item{Value: value}
+	s.data[key] = Item{Type: "string", StrVal: value}
 }
 
 func (s *Store) Expire(key string, ttlSeconds int) bool {
@@ -57,7 +60,90 @@ func (s *Store) Get(key string) (string, bool) {
 	if item.Expiration > 0 && time.Now().UnixNano() > item.Expiration {
 		return "", false // expired but not yet evicted
 	}
-	return item.Value, true
+	if item.Type != "string" {
+		return "", false // wrong type
+	}
+	return item.StrVal, true
+}
+
+func (s *Store) HSet(key, field, value string) {
+	s.mu.Lock()
+	defer s.mu.Unlock()
+	item, ok := s.data[key]
+	if !ok || item.Type != "hash" {
+		item = Item{Type: "hash", HashVal: make(map[string]string)}
+	}
+	item.HashVal[field] = value
+	s.data[key] = item
+}
+
+func (s *Store) HGet(key, field string) (string, bool) {
+	s.mu.RLock()
+	defer s.mu.RUnlock()
+	item, ok := s.data[key]
+	if !ok || item.Type != "hash" {
+		return "", false
+	}
+	if item.Expiration > 0 && time.Now().UnixNano() > item.Expiration {
+		return "", false
+	}
+	val, ok := item.HashVal[field]
+	return val, ok
+}
+
+func (s *Store) LPush(key string, values ...string) int {
+	s.mu.Lock()
+	defer s.mu.Unlock()
+	item, ok := s.data[key]
+	if !ok || item.Type != "list" {
+		item = Item{Type: "list", ListVal: make([]string, 0)}
+	}
+	// LPUSH adds to the head (beginning)
+	item.ListVal = append(values, item.ListVal...)
+	s.data[key] = item
+	return len(item.ListVal)
+}
+
+func (s *Store) LRange(key string, start, stop int) []string {
+	s.mu.RLock()
+	defer s.mu.RUnlock()
+	item, ok := s.data[key]
+	if !ok || item.Type != "list" {
+		return nil
+	}
+	if item.Expiration > 0 && time.Now().UnixNano() > item.Expiration {
+		return nil
+	}
+
+	listLen := len(item.ListVal)
+	if listLen == 0 {
+		return nil
+	}
+
+	// Handle negative indices
+	if start < 0 {
+		start = listLen + start
+	}
+	if stop < 0 {
+		stop = listLen + stop
+	}
+	if start < 0 {
+		start = 0
+	}
+	if stop < 0 {
+		stop = 0
+	}
+	if start >= listLen {
+		return nil
+	}
+	if stop >= listLen {
+		stop = listLen - 1
+	}
+	if start > stop {
+		return nil
+	}
+
+	return item.ListVal[start : stop+1]
 }
 
 func (s *Store) Del(key string) int {

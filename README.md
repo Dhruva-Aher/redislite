@@ -9,7 +9,7 @@ This is a personal project to learn about TCP servers, concurrent programming wi
 - TCP server listens on port 6380
 - Parses basic RESP protocol using a custom parser (no libs!)
 - Responds to `PING` with `+PONG`
-- Handles concurrent connections using goroutines (which really makes this almost too easy).
+- Goroutines handle each connection concurrently.
 - Core in-memory data store using `sync.RWMutex`
 - Supported commands: `SET`, `GET`, `DEL`, `EXPIRE`, `TTL`, `HSET`, `HGET`, `LPUSH`, `LRANGE`, `INFO`
 - Background goroutine that evicts expired keys every 100ms (basically what Redis does under the hood)
@@ -23,6 +23,27 @@ This is a personal project to learn about TCP servers, concurrent programming wi
 4. Open another terminal and connect using the standard Redis CLI on port 6380:
    `redis-cli -p 6380`
 5. Try out some commands!
+
+## Benchmarks
+
+I wrote a standalone benchmarking tool (`benchmark.go`) to test throughput and latency using pure stdlib TCP connections. It spawns concurrent goroutines that send a configurable mix of SET and GET commands.
+
+**How to run it:**
+```bash
+go run benchmark.go -clients 10 -commands 1000 -mix 30
+```
+
+**Results on my machine:**
+```text
+Results:
+  clients:     10
+  commands:    10000
+  duration:    0.13s
+  throughput:  74,498 ops/sec
+  p95 latency: 0.20ms
+```
+
+To scale this further, the single `sync.RWMutex` over the entire data store would need to be sharded (array of maps) to reduce lock contention under heavy concurrent writes.
 
 ## How it works
 

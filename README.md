@@ -6,10 +6,15 @@ This is a personal project to learn about TCP servers, concurrent programming wi
 
 ## What works so far
 
-Currently, this is just the initial project setup. Stay tuned!
+Phase 1 is complete! 
+- TCP server listens on port 6380
+- Parses basic RESP protocol using a custom parser (no libs!)
+- Responds to `PING` with `+PONG`
+- Handles concurrent connections using goroutines (which really makes this almost too easy).
 
 ## Supported Commands
 
+- `PING`
 (To be implemented)
 - `SET`
 - `GET`

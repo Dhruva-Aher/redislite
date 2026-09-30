@@ -70,3 +70,13 @@ Bench (server running): `go run . -bench` or see [docs/benchmark.md](docs/benchm
 | AOF replay | `aof.go` + server startup path |
 
 Do not pitch multi-node Redis cluster parity — this is a single-process learning/systems build with a measured local bench.
+
+---
+
+## For interview depth
+
+| Doc | Use |
+|-----|-----|
+| [docs/METRICS.md](docs/METRICS.md) | Claim ↔ evidence grades |
+| [docs/DECISIONS.md](docs/DECISIONS.md) | Why AOF / RWMutex / bench honesty |
+| [docs/benchmark.md](docs/benchmark.md) | Bench method |

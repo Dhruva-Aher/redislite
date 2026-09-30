@@ -3,7 +3,7 @@
 Status: **PROPOSED** ≠ **DECIDED** ≠ **IMPLEMENTED** ≠ **VERIFIED**  
 Related: [METRICS.md](./METRICS.md) · [benchmark.md](./benchmark.md) · [architecture.md](./architecture.md) · [protocol.md](./protocol.md)
 
-**Cross-verify (2026-09-30):** Test count **11** re-run green. Throughput **74,498 ops/sec** remains Grade **C** (documented example); not re-captured this pass.
+**Cross-verify (2026-09-30):** Test count **11** green. Throughput upgraded to Grade **A** — **78,086 ops/sec** / P95 **0.21 ms** in `docs/evidence/bench-2026-09-30.txt`.
 
 ---
 
@@ -49,15 +49,15 @@ Related: [METRICS.md](./METRICS.md) · [benchmark.md](./benchmark.md) · [archit
 
 ---
 
-## D4 — Documented local bench is the only public throughput claim
+## D4 — Public throughput from archived local bench only
 
 | | |
 |--|--|
 | **Context** | Temptation to invent “100k+ QPS” marketing. |
-| **Decision** | Public Y = exact **74,498 ops/sec** / P95 **0.20 ms** from `docs/benchmark.md`, Grade C until re-run archived. |
+| **Decision** | Prefer Grade A file under `docs/evidence/`; keep older `docs/benchmark.md` example as Grade C history. |
 | **Why** | Portfolio honesty; FAANG interviewers ask for method. |
-| **Evidence** | `docs/METRICS.md` C6 |
-| **Status** | DECIDED · VERIFIED (doc); re-measure → upgrade grade |
+| **Evidence** | `docs/evidence/bench-2026-09-30.txt` (**78,086** ops/sec) |
+| **Status** | DECIDED · VERIFIED |
 
 ---
 

@@ -19,8 +19,8 @@ From-scratch in-memory store that speaks a Redis RESP subset over raw TCP — co
 - **Protocol** — Custom RESP parser (no Redis client libs); `PING` / `SET` / `GET` / `DEL` / `EXPIRE` / `TTL` / hashes / lists / `INFO`.
 - **Concurrency** — Per-connection goroutines; shared store guarded by `sync.RWMutex`; background TTL sweep every **100 ms**.
 - **Durability** — Append-only file (`redislite.aof`) logs writes and replays on startup.
-- **Throughput (local)** — Documented bench: **10** clients × **1,000** cmds (**30%** writes) → **74,498 ops/sec**, P95 **0.20 ms** (M-series Mac; see [docs/benchmark.md](docs/benchmark.md)).
-- **Correctness** — **11** Go tests (`parser` + `store`); CI runs `go test ./…`.
+- **Throughput (local, Grade A)** — **2026-09-30** re-run: **10** clients × **1,000** cmds (**30%** writes) → **78,086 ops/sec**, P95 **0.21 ms**. Artifact: [`docs/evidence/bench-2026-09-30.txt`](docs/evidence/bench-2026-09-30.txt). (Prior example **74,498** / **0.20 ms** remains in [docs/benchmark.md](docs/benchmark.md) as Grade C history.)
+- **Correctness** — **11** Go tests (`parser` + `store`); CI runs `go test ./…` ([`docs/evidence/gotest-2026-09-30.txt`](docs/evidence/gotest-2026-09-30.txt)).
 
 ---
 
@@ -65,8 +65,9 @@ Bench (server running): `go run . -bench` or see [docs/benchmark.md](docs/benchm
 
 | Claim | Evidence |
 |-------|----------|
-| **74,498 ops/sec**, P95 **0.20 ms** | Example run in `docs/benchmark.md` (local; not a multi-machine capacity claim) |
-| **11** tests | `parser_test.go` + `store_test.go` |
+| **78,086 ops/sec**, P95 **0.21 ms** (2026-09-30) | [`docs/evidence/bench-2026-09-30.txt`](docs/evidence/bench-2026-09-30.txt) — Grade **A** |
+| **74,498 ops/sec**, P95 **0.20 ms** (prior) | `docs/benchmark.md` — Grade **C** history |
+| **11** tests green | [`docs/evidence/gotest-2026-09-30.txt`](docs/evidence/gotest-2026-09-30.txt) |
 | AOF replay | `aof.go` + server startup path |
 
 Do not pitch multi-node Redis cluster parity — this is a single-process learning/systems build with a measured local bench.

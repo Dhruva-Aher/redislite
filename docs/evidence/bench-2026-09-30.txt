@@ -1,0 +1,17 @@
+# RedisLite TCP benchmark — Grade A capture
+captured_at: 2026-09-30T03:23:38Z
+host: Darwin Dhruvas-MacBook-Air.local 27.0.0 Darwin Kernel Version 27.0.0: Tue Aug 11 21:02:16 PDT 2026; root:xnu-13432.1.9~1/RELEASE_ARM64_T8112 arm64
+go: go version go1.26.4 darwin/arm64
+method: go run benchmark.go -clients 10 -commands 1000 -mix 30
+server: ./redislite :6380
+
+Starting benchmark: 10 clients, 1000 commands each, 30% writes
+
+Results:
+  clients:     10
+  commands:    10000
+  duration:    0.13s
+  throughput:  78,086 ops/sec
+  p95 latency: 0.21ms
+
+Prior documented example (Grade C): 74,498 ops/sec · P95 0.20ms — docs/benchmark.md
